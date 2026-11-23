@@ -1,0 +1,24 @@
+# hello in the portal's catalog: backfilled to match the "New application" template. One System per application
+# (whatever environments run it), one Component or Resource per component.
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: acme-hello
+  title: hello
+  description: An Application of the acme project.
+spec:
+  owner: group:default/acme-owners
+  domain: acme
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: acme-hello-web
+  title: hello/web
+  annotations:
+    platform.thesoftwaregeek.com/component-type: webservice
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/acme-owners
+  system: acme-hello

@@ -1,0 +1,24 @@
+# Online Boutique in the portal's catalog. It is a plain ArgoCD Application (environments/uk-dev/boutique.yaml, the
+# repo's Helm chart), not one of the platform's Applications: one System, one Component for the whole chart.
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: acme-boutique
+  title: boutique
+  description: Online Boutique, the eleven-service demo shop, deployed from this repo's Helm chart.
+spec:
+  owner: group:default/acme-owners
+  domain: acme
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: acme-boutique
+  title: boutique
+  annotations:
+    github.com/project-slug: thesoftwaregeek/microservices-demo
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/acme-owners
+  system: acme-boutique
