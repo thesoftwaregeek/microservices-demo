@@ -1,0 +1,25 @@
+# hello: created from the portal's "New application" template.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello
+---
+apiVersion: platform.thesoftwaregeek.com/v1alpha1
+kind: Application
+metadata:
+  name: hello
+  namespace: hello
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  components:
+    - name: web
+      type: webservice
+      properties:
+        image: docker.io/library/nginx:1.29
+        port: 80
+      traits:
+        - type: scaler
+          properties: {replicas: 2}
+        - type: gateway
+          properties: {host: hello.acme.local}
