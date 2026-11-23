@@ -1,0 +1,40 @@
+# shop: two components released together, built by Crossplane on acme's uk dev cluster (the Application model).
+# api is pgweb, a PostgreSQL browser, reading the db component's database. Its login comes from acme's store
+# (uk/tenants/acme/shop/api: PGWEB_AUTH_USER, PGWEB_AUTH_PASS), the database URL from the db component's Secret.
+# Reach it through the cluster's platform Gateway with Host shop.acme.local.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shop
+---
+apiVersion: platform.thesoftwaregeek.com/v1alpha1
+kind: Application
+metadata:
+  name: shop
+  namespace: shop
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  components:
+    - name: api
+      type: webservice
+      properties:
+        image: docker.io/sosedoff/pgweb:0.17.0
+        port: 8081
+      traits:
+        - type: scaler
+          properties: {replicas: 2}
+        - type: gateway
+          properties: {host: shop.acme.local, path: /}
+        - type: secrets
+          properties: {from: [shop/api]}
+        - type: env
+          properties:
+            vars:
+              - {name: DATABASE_URL, secret: shop-db-app, key: uri}
+        - type: labels
+          properties: {labels: {team: shop}}
+      dependsOn: [db]
+    - name: db
+      type: database
+      properties: {engine: postgres, version: "17", size: small}
