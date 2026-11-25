@@ -1,6 +1,7 @@
 # shop: two components released together, built by Crossplane on acme's uk dev cluster (the Application model).
 # api is pgweb, a PostgreSQL browser, reading the db component's database. Its login comes from acme's store
-# (uk/tenants/acme/shop/api: PGWEB_AUTH_USER, PGWEB_AUTH_PASS), the database URL from the db component's Secret.
+# (shop/api in OpenBao namespace management-nonprod/uk/acme: PGWEB_AUTH_USER, PGWEB_AUTH_PASS), the database URL
+# from the db component's Secret.
 # Reach it through the cluster's platform Gateway with Host shop.acme.local.
 apiVersion: v1
 kind: Namespace

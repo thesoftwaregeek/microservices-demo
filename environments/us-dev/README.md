@@ -1,5 +1,5 @@
 # us-dev
 
-What acme's us dev cluster runs: ArgoCD Applications (`namespace: applications`, `project: owner`) and
-`Application`s of the platform's Application model. Empty for now: the folder exists so the cluster's `owner` root
-has something to sync.
+For acme's us dev cluster: ArgoCD Applications (`namespace: applications`, `project: owner`) and `Application`s of
+the platform's Application model. Unused for now: acme has no us placement (`tenants/acme/project.yaml` in
+cluster-management), and the us-dev jurisdiction is not built locally.
