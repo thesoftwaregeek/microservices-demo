@@ -37,6 +37,9 @@ FROM eclipse-temurin:25.0.4_7-jre-alpine@sha256:3137541deb3cac6626b5d9a4a2187bc0
 #     | tar xzv -C /opt/cprof && \
 #     rm -rf profiler_java_agent.tar.gz
 
+# brotli-libs 1.2.1-r0 fixes CVE-2026-111497; drop once the base image ships it.
+RUN apk upgrade --no-cache brotli-libs
+
 WORKDIR /app
 COPY --from=builder /app .
 

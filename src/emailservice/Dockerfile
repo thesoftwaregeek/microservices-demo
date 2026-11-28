@@ -28,7 +28,8 @@ RUN apk update \
 
 # get packages
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+# The base image's pip vendors certifi 2026.6.17 (GHSA-6q48-6c7w-9gw2); a newer pip carries the fix.
+RUN pip install --no-cache-dir --upgrade pip && pip install -r requirements.txt
 
 FROM base
 

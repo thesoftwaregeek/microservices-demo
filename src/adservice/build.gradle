@@ -46,6 +46,13 @@ dependencies {
         runtimeOnly "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
                 "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}",
                 "io.netty:netty-tcnative-boringssl-static:2.0.84.Final"
+
+        // CVE-2026-75595: grpc-netty pulls netty-handler 4.2.16.Final; 4.2.17.Final is the fix.
+        constraints {
+            implementation("io.netty:netty-handler:4.2.17.Final") {
+                because "CVE-2026-75595"
+            }
+        }
     }
 }
 

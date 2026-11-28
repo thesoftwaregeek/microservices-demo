@@ -39,6 +39,9 @@ RUN apk update \
     && apk add --no-cache libstdc++ \
     && rm -rf /var/cache/apk/*
 
+# The base image's pip vendors certifi 2026.6.17 (GHSA-6q48-6c7w-9gw2); a newer pip carries the fix.
+RUN pip install --no-cache-dir --upgrade pip
+
 WORKDIR /loadgen
 
 COPY --from=builder /install /usr/local
