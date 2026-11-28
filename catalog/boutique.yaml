@@ -1,5 +1,6 @@
-# Online Boutique in the portal's catalog. It is a plain ArgoCD Application (environments/uk-dev/boutique.yaml, the
-# repo's Helm chart), not one of the platform's Applications: one System, one Component for the whole chart.
+# Online Boutique in the portal's catalog. It is plain ArgoCD Applications, one per service
+# (environments/uk-dev/boutique-<service>.yaml, each the repo's Helm chart with only that service on), not the
+# platform's Applications: one System, one Component for the whole shop.
 apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:

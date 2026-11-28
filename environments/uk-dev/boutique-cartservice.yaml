@@ -1,0 +1,57 @@
+# Online Boutique's cartservice in acme's uk dev cluster, namespace boutique: one Application per service, all
+# rendering this repo's Helm chart (identical to upstream v0.10.7; the fork has no tags, so the commit is
+# pinned) as release boutique with every other service's create flag off. The release limits (128Mi for
+# several services) OOM-kill on a busy laptop, so the services that ran out get more memory.
+# It also owns redis-cart (its Deployment, Service and ServiceAccount are defined in the same chart
+# template), so redis-cart exists exactly once, here.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: boutique-cartservice
+  namespace: applications
+spec:
+  project: owner
+  source:
+    repoURL: git@github.com:thesoftwaregeek/microservices-demo.git
+    targetRevision: c7cb6d5bfd6ea3aed768634ebbcb98cb7a523712
+    path: helm-chart
+    helm:
+      releaseName: boutique
+      valuesObject:
+        adService:
+          create: false
+        checkoutService:
+          create: false
+        currencyService:
+          create: false
+        emailService:
+          create: false
+        frontend:
+          create: false
+        loadGenerator:
+          create: false
+        paymentService:
+          create: false
+        productCatalogService:
+          create: false
+        recommendationService:
+          create: false
+        shippingService:
+          create: false
+        cartService:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: boutique
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,55 @@
+# Online Boutique's emailservice in acme's uk dev cluster, namespace boutique: one Application per service, all
+# rendering this repo's Helm chart (identical to upstream v0.10.7; the fork has no tags, so the commit is
+# pinned) as release boutique with every other service's create flag off. The release limits (128Mi for
+# several services) OOM-kill on a busy laptop, so the services that ran out get more memory.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: boutique-emailservice
+  namespace: applications
+spec:
+  project: owner
+  source:
+    repoURL: git@github.com:thesoftwaregeek/microservices-demo.git
+    targetRevision: c7cb6d5bfd6ea3aed768634ebbcb98cb7a523712
+    path: helm-chart
+    helm:
+      releaseName: boutique
+      valuesObject:
+        adService:
+          create: false
+        cartService:
+          create: false
+        checkoutService:
+          create: false
+        currencyService:
+          create: false
+        frontend:
+          create: false
+        loadGenerator:
+          create: false
+        paymentService:
+          create: false
+        productCatalogService:
+          create: false
+        recommendationService:
+          create: false
+        shippingService:
+          create: false
+        emailService:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: boutique
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
