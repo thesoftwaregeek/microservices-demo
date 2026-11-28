@@ -1,51 +1,27 @@
-# GitHub Actions Workflows
+# GitHub Actions workflows
 
-This page describes the CI/CD workflows for the Online Boutique app, which run in [Github Actions](https://github.com/GoogleCloudPlatform/microservices-demo/actions).
+This repo is acme's fork of Online Boutique. Google's GKE-based workflows (deploy tests per pull request, cleanup,
+release builder, Terraform and Kubevious checks) were removed: they need Google Cloud credentials and a test cluster
+that this repo does not have.
 
-## Infrastructure
+| Workflow | Runs on | What it does |
+|---|---|---|
+| [ci.yaml](ci.yaml) | pull request to `main`, push to `main`, and called by the release | Go unit tests (`shippingservice`, `productcatalogservice`, `frontend/validator`) and C# tests (`cartservice`) |
+| [release.yaml](release.yaml) | push of a tag `<service>-<major>.<minor>.<patch>`; `workflow_dispatch` with a `tag` input | Tests, then builds `src/<service>` for `linux/amd64` and `linux/arm64`, pushes `<registry>/boutique/<service>:<version>`, scans it with Trivy (fixable CRITICAL fails) and signs it by digest with keyless cosign |
+| [helm-chart-ci.yaml](helm-chart-ci.yaml) | changes under `helm-chart/` | `helm lint` and `helm template` combinations |
+| [kustomize-build-ci.yaml](kustomize-build-ci.yaml) | changes under `kustomize/` | builds the base and every combination in `kustomize/tests` |
 
-The CI/CD pipelines for Online Boutique run on standard GitHub-hosted runners (Ubuntu). 
+## Releasing an image
 
-We also host a test GKE cluster, which is where the deploy tests run. Every PR has its own namespace in the cluster.
+```bash
+git tag cartservice-0.1.0 && git push origin cartservice-0.1.0
+```
 
-## Workflows
-
-**Note**: In order for the current CI/CD setup to work on your pull request, you must branch directly off the repo (no forks). This is because the Github secrets necessary for these tests aren't copied over when you fork.
-
-### Code Tests - [ci-pr.yaml](ci-pr.yaml)
-
-These tests run on every commit for every open PR, as well as any commit to main / any release branch. Currently, this workflow runs only Go unit tests.
-
-
-### Deploy Tests- [ci-pr.yaml](ci-pr.yaml)
-
-These tests run on every commit for every open PR, as well as any commit to main / any release branch. This workflow:
-
-1. Creates a dedicated GKE namespace for that PR, if it doesn't already exist, in the PR GKE cluster.
-2. Uses `skaffold run` to build and push the images specific to that PR commit. Then skaffold deploys those images, via `kubernetes-manifests`, to the PR namespace in the test cluster.
-3. Tests to make sure all the pods start up and become ready.
-4. Gets the LoadBalancer IP for the frontend service.
-5. Comments that IP in the pull request, for staging.
-
-### Push and Deploy Latest - [push-deploy](push-deploy.yml)
-
-This is the Continuous Deployment workflow, and it runs on every commit to the main branch. This workflow:
-
-1. Builds the container images for every service, tagging as `latest`.
-2. Pushes those images to Google Container Registry.
-
-Note that this workflow does not update the image tags used in `release/kubernetes-manifests.yaml` - these release manifests are tied to a stable `v0.x.x` release.
-
-### Cleanup - [cleanup.yaml](cleanup.yaml)
-
-This workflow runs on an hourly schedule (and can be triggered manually via `workflow_dispatch`) to delete PR-specific GKE namespaces (`pr<N>`) in the test cluster for pull requests that have been closed or merged.
-
-### Manual Release Builder - [make-release.yaml](make-release.yaml)
-
-This workflow is manually triggered via the `workflow_dispatch` event to automate the release process. When run, it:
-1. Validates the release version format.
-2. Automates the build and push of container images to Google Cloud Build.
-3. Automatically regenerates Kubernetes manifests and Kustomize bases.
-4. Packages and pushes the Helm chart.
-5. Branches and tags the repository.
-6. Opens a new Pull Request targeting `main` with the release checklist.
+- Services: adservice, cartservice, checkoutservice, currencyservice, emailservice, frontend, loadgenerator,
+  paymentservice, productcatalogservice, recommendationservice, shippingservice. Any other service name is rejected.
+- The registry is `vars.PACKAGE_REGISTRY`, default `ghcr.io/<owner>`. An existing version is never overwritten.
+- For `workflow_dispatch`, choose the tag itself under "Use workflow from": the signature records the ref the run
+  started from.
+- The signature identity is `.../microservices-demo/.github/workflows/release.yaml@refs/tags/<service>-<version>`.
+  The helm-charts mirror gate (`VENDOR_REPOS`) currently accepts only `refs/tags/v<major>.<minor>.<patch>`, so it will
+  not accept these images until its identity pattern is widened to the `<service>-<version>` form.
