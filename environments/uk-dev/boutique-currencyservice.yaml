@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: ghcr.io/thesoftwaregeek/charts
     chart: boutique-currencyservice
-    targetRevision: 0.1.1
+    targetRevision: 0.1.2
     helm:
       releaseName: boutique
       valuesObject:
