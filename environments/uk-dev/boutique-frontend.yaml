@@ -1,7 +1,7 @@
-# Online Boutique's frontend in acme's uk dev cluster, namespace boutique: one Application per service, all
-# rendering this repo's Helm chart (identical to upstream v0.10.7; the fork has no tags, so the commit is
-# pinned) as release boutique with every other service's create flag off. The release limits (128Mi for
-# several services) OOM-kill on a busy laptop, so the services that ran out get more memory.
+# Online Boutique's frontend in acme's uk dev cluster, namespace boutique: one Application per service.
+# It installs the chart boutique-frontend from oci://ghcr.io/thesoftwaregeek/charts as release
+# boutique, so the object names stay. The image is ghcr.io/thesoftwaregeek/boutique/frontend, built and
+# signed from the tag frontend-<version> in this repo; the chart version moves with it.
 # externalService is off: Kind has no LoadBalancer, and ArgoCD would wait for its address. Reach the shop
 # with a port-forward to service frontend.
 apiVersion: argoproj.io/v1alpha1
@@ -12,34 +12,13 @@ metadata:
 spec:
   project: owner
   source:
-    repoURL: git@github.com:thesoftwaregeek/microservices-demo.git
-    targetRevision: c7cb6d5bfd6ea3aed768634ebbcb98cb7a523712
-    path: helm-chart
+    repoURL: ghcr.io/thesoftwaregeek/charts
+    chart: boutique-frontend
+    targetRevision: 0.1.0
     helm:
       releaseName: boutique
       valuesObject:
-        adService:
-          create: false
-        cartService:
-          create: false
-        checkoutService:
-          create: false
-        currencyService:
-          create: false
-        emailService:
-          create: false
-        loadGenerator:
-          create: false
-        paymentService:
-          create: false
-        productCatalogService:
-          create: false
-        recommendationService:
-          create: false
-        shippingService:
-          create: false
-        frontend:
-          externalService: false
+        externalService: false
   destination:
     server: https://kubernetes.default.svc
     namespace: boutique
